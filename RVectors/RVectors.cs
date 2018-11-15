@@ -25,51 +25,48 @@ namespace RVectors
         /// <param name="vectorString">A written vector ie "(1,2)"</param>
         public R2Vector(string vectorString)
         {
-            List<int> indexes = new List<int>();
+            List<float> vComps = new List<float>();
 
             char[] vectorChars = vectorString.ToCharArray();
+
+            float nComp = 0;
+            bool und1 = false;
+            int decPlace = 0;
+
             for (int i = 0; i < vectorChars.Length; i++)
             {
                 if (Char.IsNumber(vectorChars[i]))
                 {
-                    indexes.Add(i);
-                }
-            }
-
-            int vComponent = 0;
-            List<int> vComps = new List<int>();
-            for (int i = 0; i < indexes.Count; i++)
-            {
-                if (i == 0)
-                {
-                    vComponent = Convert.ToInt32(vectorChars[indexes[i]].ToString());
-                }
-                else if (indexes[i] - 1 == indexes[i - 1])
-                {
-                    vComponent = vComponent * 10 + Convert.ToInt32(vectorChars[indexes[i]].ToString());
-                }
-                else
-                {
-                    vComps.Add(vComponent);
-                    vComponent = 0;
-
-                    if (i == indexes.Count - 1)
+                    if(und1)
                     {
-                        vComponent += Convert.ToInt32(vectorChars[indexes[i]].ToString());
-                        vComps.Add(vComponent);
-                        break;
+                        nComp = nComp + (float)Math.Pow(10, -decPlace) * (float)Convert.ToDouble(vectorChars[i].ToString());
+                        decPlace++;
                     }
                     else
                     {
-                        vComponent = Convert.ToInt32(vectorChars[indexes[i]].ToString());
+                        nComp = nComp * 10 + (float)Convert.ToDouble(vectorChars[i].ToString());
                     }
                 }
-
-                if (i == indexes.Count - 1)
+                else if (vectorChars[i].ToString() == ".")
                 {
-                    vComps.Add(vComponent);
+                    und1 = true;
+                    decPlace++;
                 }
-            }
+                else
+                {
+                    und1 = false;
+                    decPlace = 0;
+                    try
+                    {
+                        if (Char.IsNumber(vectorChars[i - 1]))
+                        {
+                            vComps.Add(nComp);
+                            nComp = 0;
+                        }
+                    }
+                    catch { };
+                }
+            }           
 
             x = vComps[0];
             y = vComps[1];
@@ -124,49 +121,46 @@ namespace RVectors
         /// <param name="vectorString">A written vector ie "(1,2,5)"</param>
         public R3Vector(string vectorString)
         {
-            List<int> indexes = new List<int>();
+            List<float> vComps = new List<float>();
 
             char[] vectorChars = vectorString.ToCharArray();
+
+            float nComp = 0;
+            bool und1 = false;
+            int decPlace = 0;
+
             for (int i = 0; i < vectorChars.Length; i++)
             {
                 if (Char.IsNumber(vectorChars[i]))
                 {
-                    indexes.Add(i);
-                }
-            }
-
-            int vComponent = 0;
-            List<int> vComps = new List<int>();
-            for (int i = 0; i < indexes.Count; i++)
-            {
-                if (i == 0)
-                {
-                    vComponent = Convert.ToInt32(vectorChars[indexes[i]].ToString());
-                }
-                else if (indexes[i] - 1 == indexes[i - 1])
-                {
-                    vComponent = vComponent * 10 + Convert.ToInt32(vectorChars[indexes[i]].ToString());
-                }
-                else
-                {
-                    vComps.Add(vComponent);
-                    vComponent = 0;
-
-                    if (i == indexes.Count - 1)
+                    if (und1)
                     {
-                        vComponent += Convert.ToInt32(vectorChars[indexes[i]].ToString());
-                        vComps.Add(vComponent);
-                        break;
+                        nComp = nComp + (float)Math.Pow(10, -decPlace) * (float)Convert.ToDouble(vectorChars[i].ToString());
+                        decPlace++;
                     }
                     else
                     {
-                        vComponent = Convert.ToInt32(vectorChars[indexes[i]].ToString());
+                        nComp = nComp * 10 + (float)Convert.ToDouble(vectorChars[i].ToString());
                     }
                 }
-
-                if (i == indexes.Count - 1)
+                else if (vectorChars[i].ToString() == ".")
                 {
-                    vComps.Add(vComponent);
+                    und1 = true;
+                    decPlace++;
+                }
+                else
+                {
+                    und1 = false;
+                    decPlace = 0;
+                    try
+                    {
+                        if (Char.IsNumber(vectorChars[i - 1]))
+                        {
+                            vComps.Add(nComp);
+                            nComp = 0;
+                        }
+                    }
+                    catch { };
                 }
             }
 
