@@ -20,6 +20,16 @@ namespace RVectors
         }
 
         /// <summary>
+        /// Creates vector with components
+        /// </summary>
+        /// <param name="compenents">In the order x then y</param>
+        public R2Vector(List<float> compenents)
+        {
+            x = compenents[0];
+            y = compenents[1];
+        }
+
+        /// <summary>
         /// Takes a string and splits it up, then makes the a vector out of the pieces
         /// </summary>
         /// <param name="vectorString">A written vector ie "(1,2)"</param>
@@ -116,6 +126,17 @@ namespace RVectors
         }
 
         /// <summary>
+        /// Creates vector with components
+        /// </summary>
+        /// <param name="compenents">In the order x then y then z</param>
+        public R3Vector(List<float> compenents)
+        {
+            x = compenents[0];
+            y = compenents[1];
+            z = compenents[2];
+        }
+
+        /// <summary>
         /// Takes a string and splits it up, then makes the a vector out of the pieces
         /// </summary>
         /// <param name="vectorString">A written vector ie "(1,2,5)"</param>
@@ -203,5 +224,250 @@ namespace RVectors
             y /= magnetude();
             z /= magnetude();
         }
+    }
+
+    public class RNVector
+    {
+        List<float> components = new List<float>();
+
+        public RNVector(List<float> _components)
+        {
+            components = _components;
+        }
+
+        public float magnetude()
+        {
+            float compSum = 0;
+            foreach (float c in components)
+            {
+                compSum += (float)Math.Pow(c, 2);
+            }
+
+            return (float)Math.Sqrt(compSum);
+        }
+
+        public void noramlize()
+        {
+            float mag = magnetude();
+            for (int i = 0; i < components.Count; i++)
+            {
+                components[i] /= mag;
+            }
+        }
+
+        public float dot(RNVector vec)
+        {
+            float dotSum = 0;
+
+            for(int i = 0; i < components.Count; i++)
+            {
+                dotSum += components[i] * vec.components[i];
+            }
+            return dotSum;
+        }
+    }
+
+    public class Matrix
+    {
+        List<List<float>> MRows = new List<List<float>>();
+
+        /// <summary>
+        /// Takes in a list of enteries and makes a nxm Matrix
+        /// </summary>
+        /// <param name="orderedEntries">Enteries of the matrix ie.
+        /// row 1 : [1 2 3]
+        /// row 2 : [2 5 7]
+        /// would be put in a list in the order {1,2,3,2,5,7}
+        /// </param>
+        /// <param name="cols">numbers of cols of the matrix</param>
+        public Matrix(List<float> orderedEntries, int cols)
+        {
+            List<float> row = new List<float>();
+            for (int i = 0; i < orderedEntries.Count; i++)
+            {
+                row.Add(orderedEntries[i]);
+
+                if (row.Count == cols)
+                {
+                    MRows.Add(row);
+                    row = new List<float>();
+                }
+            }
+
+            if(MRows.Count == 0)
+            {
+                MRows.Add(row);
+            }
+        }
+
+        public void add(Matrix m2)
+        {
+            if (MRows.Count == m2.MRows.Count && MRows[0].Count == m2.MRows[0].Count)
+            {
+                for (int i = 0; i < MRows.Count; i++)
+                {
+                    for (int j = 0; j < MRows[i].Count; i++)
+                    {
+                        MRows[i][j] += m2.MRows[i][j];
+                    }
+                }
+            }
+        }
+
+        public Matrix mult(Matrix m2)
+        {
+            List<RNVector> rowVectors = new List<RNVector>();
+            List<RNVector> rowVectors2 = new List<RNVector>();
+
+            //get rows of first matrix 
+            for (int i = 0; i < MRows.Count; i++)
+            {
+                RNVector rN = new RNVector(MRows[i]);
+                rowVectors.Add(rN);             
+            }
+
+            //get cols of second matrix 
+            for (int x = 0; x < m2.MRows[0].Count; x++)
+            {
+                List<float> colComps = new List<float>();
+                for (int y = 0; y < m2.MRows.Count; y++)
+                {
+                    colComps.Add(m2.MRows[y][x]);
+                }
+
+                RNVector rN = new RNVector(colComps);
+                rowVectors2.Add(rN);
+            }
+
+            //same number of cols as second matrix
+            int cols = m2.MRows[0].Count;
+
+            List<float> orderedEntries = new List<float>();
+
+            //same number of rows as first matrix
+            for(int i = 0; i < MRows.Count; i++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    orderedEntries.Add(rowVectors[i].dot(rowVectors2[c]));
+                }              
+            }
+
+            return new Matrix(orderedEntries, cols);
+        }
+    }
+
+    public class AugMatrix
+    {
+        List<List<float>> MRows = new List<List<float>>();
+        //List<float> MConstants = new List<float>();
+       
+        public AugMatrix(List<float> coeffs, List<float> consts, int cols)
+        {
+            List<float> row = new List<float>();
+            //MConstants = consts;
+            int rCount = 0;
+
+            for (int i = 0; i < coeffs.Count; i++)
+            {
+                row.Add(coeffs[i]);
+
+                if (row.Count == cols)
+                {
+                    row.Add(consts[rCount]);
+                    rCount++;
+                    MRows.Add(row);
+                    row = new List<float>();
+                }
+            }
+        }
+
+        public List<float> solve()
+        {
+            int workingCol = 0;
+            for (int i = 0; i < MRows.Count; i++)
+            {
+                if (MRows[i][workingCol] == 0)
+                {
+                    int next = 0;
+
+                    for(int x = 0; x < MRows.Count; x++)
+                    {
+                        if(MRows[x][workingCol] != 0)
+                        {
+                            next = x;
+                            break;
+                        }
+                    }
+
+                    R1(i, next);
+                }
+
+                if (MRows[i][workingCol] != 1 && MRows[i][workingCol] != 0)
+                {
+                    R2(i, 1 / MRows[i][workingCol]);
+                }
+
+                for (int j = 0; j < MRows.Count; j++)
+                {
+                    if (j != i)
+                    {
+
+                        R3(i, j, -MRows[j][workingCol]/ MRows[i][workingCol]);
+                    }
+                }
+
+                workingCol++;
+            }
+
+
+            List<float> solutions = new List<float>();
+            foreach(List<float> row in MRows)
+            {
+               solutions.Add(row[row.Count - 1]);
+            }
+
+            return solutions;
+        }   
+        
+        /// <summary>
+        /// Interchages Rows
+        /// </summary>
+        public void R1(int r1Index, int r2Index)
+        {
+            List<float> r1 = new List<float>();                
+            r1.AddRange(MRows[r1Index]);
+            List<float> r2 = new List<float>();
+            r2.AddRange(MRows[r2Index]);
+
+            for(int i = 0; i < r1.Count; i++)
+            {
+                MRows[r1Index][i] = r2[i];
+                MRows[r2Index][i] = r1[i];
+            }
+        }
+
+        public void R2(int rowIndex, float mult)
+        {
+            for(int i = 0; i < MRows[rowIndex].Count; i++)
+            {
+                MRows[rowIndex][i] *= mult;
+            }
+        }
+
+        /// <summary>
+        /// adds scalar multiple of one row to another
+        /// </summary>
+        /// <param name="r1Index">row that will be added</param>
+        /// <param name="r2Index">row that will be changed due to the addition</param>
+        /// <param name="mult">the scalar multiplier</param>
+        public void R3(int r1Index, int r2Index, float mult)
+        {
+            for (int i = 0; i < MRows[r2Index].Count; i++)
+            {
+                MRows[r2Index][i] += mult * MRows[r1Index][i];
+            }
+        }
+
     }
 }
