@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+//Check out https://github.com/samuwyat989/3DProjection for a cool use of these classes
 namespace RVectors
 {
     public class R2Vector
@@ -90,6 +91,12 @@ namespace RVectors
         public float magnetude()
         {
             return (float)Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+        }
+
+        public void scalarMult(float mult)
+        {
+            x *= mult;
+            y *= mult;
         }
 
         public float dot(R2Vector v)
@@ -228,7 +235,7 @@ namespace RVectors
 
     public class RNVector
     {
-        List<float> components = new List<float>();
+        public List<float> components = new List<float>();
 
         public RNVector(List<float> _components)
         {
@@ -244,6 +251,19 @@ namespace RVectors
             }
 
             return (float)Math.Sqrt(compSum);
+        }
+
+        public Matrix ToMatrix()
+        {
+            return new Matrix(components, 1);
+        }
+
+        public void scalarMult(float mult)
+        {
+            for(int i = 0; i < components.Count; i++)
+            {
+                components[i] *= mult;
+            }
         }
 
         public void noramlize()
@@ -269,7 +289,7 @@ namespace RVectors
 
     public class Matrix
     {
-        List<List<float>> MRows = new List<List<float>>();
+        public List<List<float>> MRows = new List<List<float>>();
 
         /// <summary>
         /// Takes in a list of enteries and makes a nxm Matrix
@@ -298,6 +318,22 @@ namespace RVectors
             {
                 MRows.Add(row);
             }
+        }
+
+        public Matrix()
+        {
+
+        }
+
+        public RNVector ToVec()
+        {
+            List<float> comps = new List<float>();
+            for(int i = 0; i < MRows.Count; i++)
+            {
+                comps.Add(MRows[i][0]);
+            }
+
+            return new RNVector(comps);
         }
 
         public void add(Matrix m2)
